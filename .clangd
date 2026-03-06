@@ -1,0 +1,13 @@
+CompileFlags:
+  CompilationDatabase: build
+  Add:
+    - -std=c++17
+    - -Iinclude
+    - -Isrc
+    - -I3rdparty/json11
+
+Index:
+  Background: Build
+
+Completion:
+  AllScopes: true

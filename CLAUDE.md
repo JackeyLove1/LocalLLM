@@ -17,3 +17,8 @@ LocalLLM是使用C++和CUDA实现的高性能Qwen模型专用推理引擎，VLLM
 ## Others
 1. qwen model file in models/Qwen3-0.6B , huggingface format, for testing
 2. use git for progress managment
+
+### Develop Enviroment
+1. windows wsl
+2. NVIDIA 5060 GPU sm120
+3. cuda 12.8
