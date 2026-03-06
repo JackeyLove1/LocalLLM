@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "localllm/common/logging.h"
 #include "localllm/common/status.h"
 
 namespace localllm {
@@ -29,6 +30,7 @@ std::int64_t ParseInt64(const char* value, const std::string& name) {
 CliOptions ParseCliOptions(int argc, char** argv) {
   CliOptions options;
   options.model_dir = "models/Qwen3-0.6B";
+  bool prompt_from_stdin = false;
 
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
@@ -65,11 +67,23 @@ CliOptions ParseCliOptions(int argc, char** argv) {
   }
 
   if (options.prompt.empty()) {
+    prompt_from_stdin = true;
     std::ostringstream input;
     input << std::cin.rdbuf();
     options.prompt = input.str();
   }
   LOCALLLM_CHECK(!options.prompt.empty(), "Prompt is required. Use --prompt or pipe stdin.");
+  LogInfo(
+      "CLI options parsed: model_dir=" + options.model_dir.string() +
+      ", prompt_source=" + std::string(prompt_from_stdin ? "stdin" : "argument") +
+      ", prompt_chars=" + std::to_string(options.prompt.size()) +
+      ", chat_mode=" + std::string(options.chat_mode ? "true" : "false") +
+      ", stream=" + std::string(options.sampling.stream ? "true" : "false") +
+      ", max_new_tokens=" + std::to_string(options.sampling.max_new_tokens) +
+      ", temperature=" + std::to_string(options.sampling.temperature) +
+      ", top_p=" + std::to_string(options.sampling.top_p) +
+      ", top_k=" + std::to_string(options.sampling.top_k) +
+      ", stop_strings=" + std::to_string(options.sampling.stop_strings.size()));
   return options;
 }
 

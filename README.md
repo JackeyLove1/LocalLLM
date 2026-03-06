@@ -1,4 +1,18 @@
 # LocalLLM
+## Logging
+
+The project now routes runtime logs through `glog`.
+
+- Logs default to `stderr` and do not write log files automatically.
+- `stdout` remains reserved for generated model text so existing CLI piping behavior is unchanged.
+- If you need more verbose logging later, extend the startup configuration with additional `glog` flags.
+
+## brpc
+
+- Bundled `brpc` support is available through the CMake option `LOCALLLM_ENABLE_BRPC`.
+- The option defaults to `OFF` so existing builds are unchanged until RPC code is added.
+- When enabled, the project exposes a `localllm::brpc` target that wraps the vendored `3rdparty/brpc` build.
+- `brpc` still requires its system dependencies to be installed and discoverable by CMake, including `gflags`, `protobuf`, `libprotoc`, `leveldb`, and `OpenSSL`.
 
 LocalLLM 是一个使用 C++ 实现的 Qwen 专用推理引擎原型，目标架构参考 vLLM 思路，当前已完成 Phase 1 baseline：
 

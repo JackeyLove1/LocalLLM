@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "localllm/common/logging.h"
 #include "localllm/common/status.h"
 #include "localllm/tokenizer/bpe_tokenizer.h"
 
@@ -156,6 +157,7 @@ torch::Tensor QwenExecutor::ForwardChunk(const std::vector<std::int64_t>& token_
 }
 
 ExecutorResult QwenExecutor::Prefill(const std::vector<std::int64_t>& prompt_token_ids) {
+  LogInfo("Starting prefill with " + std::to_string(prompt_token_ids.size()) + " prompt tokens.");
   ResetState();
   prompt_token_ids_ = prompt_token_ids;
   return ExecutorResult{ForwardChunk(prompt_token_ids, true)};
@@ -170,6 +172,12 @@ GenerationResult QwenExecutor::Generate(
     const std::vector<std::int64_t>& prompt_token_ids,
     const BpeTokenizer& tokenizer,
     const SamplingParams& params) {
+  LogInfo(
+      "Entering generation loop: max_new_tokens=" + std::to_string(params.max_new_tokens) +
+      ", temperature=" + std::to_string(params.temperature) +
+      ", top_p=" + std::to_string(params.top_p) +
+      ", top_k=" + std::to_string(params.top_k) +
+      ", stream=" + std::string(params.stream ? "true" : "false"));
   auto logits = Prefill(prompt_token_ids).logits;
   std::string generated_text;
   bool stop_requested = false;
@@ -183,18 +191,20 @@ GenerationResult QwenExecutor::Generate(
     if (params.stream) {
       std::cout << token_text << std::flush;
       if (params.print_token_ids) {
-        std::cerr << "[token] " << next_token << '\n';
+        LogInfo("Generated token id: " + std::to_string(next_token));
       }
     }
 
     if (next_token == config_.eos_token_id) {
       generated_token_ids_.push_back(next_token);
+      LogInfo("Stopping generation after EOS token at step " + std::to_string(step + 1) + ".");
       break;
     }
     for (const auto& stop : params.stop_strings) {
       if (!stop.empty() && generated_text.size() >= stop.size() &&
           generated_text.compare(generated_text.size() - stop.size(), stop.size(), stop) == 0) {
         stop_requested = true;
+        LogInfo("Stopping generation after stop string match at step " + std::to_string(step + 1) + ".");
         break;
       }
     }
@@ -203,6 +213,10 @@ GenerationResult QwenExecutor::Generate(
 
   std::vector<std::int64_t> all = prompt_token_ids_;
   all.insert(all.end(), generated_token_ids_.begin(), generated_token_ids_.end());
+  LogInfo(
+      "Generation completed: prompt_tokens=" + std::to_string(prompt_token_ids_.size()) +
+      ", generated_tokens=" + std::to_string(generated_token_ids_.size()) +
+      ", total_tokens=" + std::to_string(all.size()));
   return GenerationResult{prompt_token_ids_, generated_token_ids_, all, generated_text};
 }
 

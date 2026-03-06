@@ -32,16 +32,35 @@ torch::ScalarType ResolveWeightDtype(const torch::Device& device) {
   return device.is_cuda() ? torch::kBFloat16 : torch::kFloat32;
 }
 
+std::string DeviceToString(const torch::Device& device) {
+  return device.is_cuda() ? "cuda" : "cpu";
+}
+
+std::string ScalarTypeToString(torch::ScalarType dtype) {
+  switch (dtype) {
+    case torch::kBFloat16:
+      return "bfloat16";
+    case torch::kFloat32:
+      return "float32";
+    default:
+      return "unknown";
+  }
+}
+
 }  // namespace
 
 ModelWeights LoadWeights(
     const std::filesystem::path& model_dir, const QwenConfig& config, const torch::Device& device) {
-  LogInfo("Loading weights from " + (model_dir / "model.safetensors").string());
-  SafeTensorFile safetensors(model_dir / "model.safetensors");
+  const auto weights_path = model_dir / "model.safetensors";
+  const auto weight_dtype = ResolveWeightDtype(device);
+  LogInfo(
+      "Loading weights from " + weights_path.string() + " on device=" + DeviceToString(device) +
+      " with dtype=" + ScalarTypeToString(weight_dtype));
+  SafeTensorFile safetensors(weights_path);
 
   ModelWeights weights;
   weights.device = device;
-  weights.dtype = ResolveWeightDtype(device);
+  weights.dtype = weight_dtype;
   weights.embed_tokens =
       safetensors.LoadTensor("model.embed_tokens.weight", weights.dtype, device);
   weights.norm = safetensors.LoadTensor("model.norm.weight", weights.dtype, device);
@@ -99,6 +118,10 @@ ModelWeights LoadWeights(
     weights.layers.push_back(std::move(layer));
   }
 
+  LogInfo(
+      "Finished loading weights: layers=" + std::to_string(weights.layers.size()) +
+      ", device=" + DeviceToString(weights.device) +
+      ", dtype=" + ScalarTypeToString(weights.dtype));
   return weights;
 }
 

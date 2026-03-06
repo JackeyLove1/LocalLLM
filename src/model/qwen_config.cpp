@@ -3,6 +3,7 @@
 #include "json11.hpp"
 
 #include "localllm/common/file_util.h"
+#include "localllm/common/logging.h"
 #include "localllm/common/status.h"
 
 namespace localllm {
@@ -34,6 +35,13 @@ QwenConfig LoadConfig(const std::filesystem::path& model_dir) {
   LOCALLLM_CHECK(config.num_attention_heads > 0, "Invalid num_attention_heads in config.json");
   LOCALLLM_CHECK(config.num_key_value_heads > 0, "Invalid num_key_value_heads in config.json");
   LOCALLLM_CHECK(config.head_dim > 0, "Invalid head_dim in config.json");
+  LogInfo(
+      "Loaded model config: vocab_size=" + std::to_string(config.vocab_size) +
+      ", hidden_size=" + std::to_string(config.hidden_size) +
+      ", layers=" + std::to_string(config.num_hidden_layers) +
+      ", attention_heads=" + std::to_string(config.num_attention_heads) +
+      ", kv_heads=" + std::to_string(config.num_key_value_heads) +
+      ", head_dim=" + std::to_string(config.head_dim));
   return config;
 }
 

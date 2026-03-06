@@ -1,11 +1,47 @@
 #include "localllm/common/logging.h"
 
-#include <iostream>
+#include <cstdlib>
+#include <mutex>
+
+#include <glog/logging.h>
 
 namespace localllm {
 
-void LogInfo(const std::string& message) { std::cerr << "[INFO] " << message << '\n'; }
+namespace {
 
-void LogWarn(const std::string& message) { std::cerr << "[WARN] " << message << '\n'; }
+void ConfigureLogging(const char* argv0) {
+  FLAGS_logtostderr = true;
+  FLAGS_alsologtostderr = false;
+  FLAGS_logtostdout = false;
+  FLAGS_colorlogtostderr = true;
+  FLAGS_stderrthreshold = 0;
+  google::InitGoogleLogging(argv0);
+  std::atexit([]() { google::ShutdownGoogleLogging(); });
+}
+
+void EnsureLoggingInitialized(const char* argv0 = "localllm") {
+  static std::once_flag init_once;
+  const char* program_name = (argv0 != nullptr && argv0[0] != '\0') ? argv0 : "localllm";
+  std::call_once(init_once, [program_name]() { ConfigureLogging(program_name); });
+}
+
+}  // namespace
+
+void InitializeLogging(const char* argv0) { EnsureLoggingInitialized(argv0); }
+
+void LogInfo(const std::string& message) {
+  EnsureLoggingInitialized();
+  LOG(INFO) << message;
+}
+
+void LogWarn(const std::string& message) {
+  EnsureLoggingInitialized();
+  LOG(WARNING) << message;
+}
+
+void LogError(const std::string& message) {
+  EnsureLoggingInitialized();
+  LOG(ERROR) << message;
+}
 
 }  // namespace localllm
