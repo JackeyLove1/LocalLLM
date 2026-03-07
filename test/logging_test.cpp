@@ -1,12 +1,14 @@
-#include <gtest/gtest.h>
-
 #include "localllm/common/logging.h"
+
+#include <gtest/gtest.h>
 
 namespace localllm {
 namespace {
 
-TEST(LoggingTest, InitializeLoggingIsIdempotent) {
+TEST(LoggingTest, InitializesOnceAndAcceptsRepeatedCalls) {
   InitializeLogging("localllm_tests");
+  InitializeLogging("");
+  InitializeLogging(nullptr);
   InitializeLogging("localllm_tests");
 
   LogInfo("logging test info");

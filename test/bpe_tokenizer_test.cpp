@@ -1,10 +1,11 @@
-#include <algorithm>
-#include <filesystem>
-#include <vector>
+#include "localllm/tokenizer/bpe_tokenizer.h"
 
 #include <gtest/gtest.h>
 
-#include "localllm/tokenizer/bpe_tokenizer.h"
+#include <algorithm>
+#include <filesystem>
+#include <memory>
+#include <vector>
 
 namespace localllm {
 namespace {
@@ -13,15 +14,28 @@ constexpr char kTokenizerModelDir[] = "models/Qwen3-0.6B";
 
 class BpeTokenizerTest : public testing::Test {
  protected:
+  static void SetUpTestSuite() {
+    tokenizer_ = std::make_unique<BpeTokenizer>(
+        BpeTokenizer::LoadFromDir(std::filesystem::path(kTokenizerModelDir)));
+    ASSERT_NE(tokenizer_.get(), nullptr);
+  }
+
+  static void TearDownTestSuite() { tokenizer_.reset(); }
+
   const BpeTokenizer& tokenizer() const { return GetSharedTokenizer(); }
 
  private:
-  static const BpeTokenizer& GetSharedTokenizer() {
-    static const BpeTokenizer* const tokenizer = new BpeTokenizer(
-        BpeTokenizer::LoadFromDir(std::filesystem::path(kTokenizerModelDir)));
-    return *tokenizer;
-  }
+  static const BpeTokenizer& GetSharedTokenizer() { return *tokenizer_; }
+
+  static std::unique_ptr<BpeTokenizer> tokenizer_;
 };
+
+std::unique_ptr<BpeTokenizer> BpeTokenizerTest::tokenizer_;
+
+TEST_F(BpeTokenizerTest, EncodeBasicPrompt) {
+  const auto res = tokenizer().Encode("Hello world");
+  EXPECT_GT(res.size(), 0);
+}
 
 TEST_F(BpeTokenizerTest, EncodesExpectedEnglishTokens) {
   EXPECT_EQ(tokenizer().Encode("Hello world"), std::vector<std::int64_t>({9707, 1879}));
