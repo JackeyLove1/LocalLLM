@@ -5,6 +5,7 @@ LocalLLM是使用C++和CUDA实现的高性能Qwen模型专用推理引擎，VLLM
 2. gguf
 3. pytorch
 4. googletest, glog, gflag
+5. meta folly
 
 ## Rule
 1. **严格遵守Google C++ Style**

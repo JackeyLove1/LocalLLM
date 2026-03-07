@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <vector>
 
@@ -55,6 +56,13 @@ TEST_F(BpeTokenizerTest, HandlesChineseRoundTrip) {
   EXPECT_EQ(tokenizer().Decode(token_ids, false), text);
 }
 
+TEST_F(BpeTokenizerTest, HandlesEnglishContractionsWithoutDuplicatingCharacters) {
+  const std::string text = "it's I'm I'd can't";
+  const auto token_ids = tokenizer().Encode(text);
+  ASSERT_FALSE(token_ids.empty());
+  EXPECT_EQ(tokenizer().Decode(token_ids, false), text);
+}
+
 TEST_F(BpeTokenizerTest, HandlesEmptyInputForEncodeAndDecode) {
   EXPECT_TRUE(tokenizer().Encode("").empty());
   EXPECT_TRUE(tokenizer().Decode({}, false).empty());
@@ -86,6 +94,43 @@ TEST_F(BpeTokenizerTest, AppliesChatTemplateWithExpectedSpecialTokenCounts) {
   ASSERT_EQ(std::count(token_ids.begin(), token_ids.end(), 151645), 1);
   EXPECT_EQ(tokenizer().Decode(token_ids, false), templated);
   EXPECT_EQ(tokenizer().Decode(token_ids, true), "user\nHello\nassistant\n");
+}
+
+TEST(BpeTokenizerMinimalModelTest, AppliesMergePriorityOnByteLevelSymbols) {
+  const auto temp_dir = std::filesystem::path("build") / "testdata" /
+                        "localllm_bpe_tokenizer_minimal_model";
+  std::error_code error_code;
+  ASSERT_TRUE(std::filesystem::exists(temp_dir) ||
+              std::filesystem::create_directories(temp_dir, error_code));
+
+  {
+    std::ofstream vocab_file(temp_dir / "vocab.json");
+    ASSERT_TRUE(vocab_file.is_open());
+    vocab_file << R"({
+  "a": 0,
+  "b": 1,
+  "c": 2,
+  "ab": 3,
+  "bc": 4,
+  "abc": 5
+})";
+  }
+  {
+    std::ofstream merges_file(temp_dir / "merges.txt");
+    ASSERT_TRUE(merges_file.is_open());
+    merges_file << "a b\nab c\nb c\n";
+  }
+  {
+    std::ofstream tokenizer_config_file(temp_dir / "tokenizer_config.json");
+    ASSERT_TRUE(tokenizer_config_file.is_open());
+    tokenizer_config_file << R"({
+  "added_tokens_decoder": {}
+})";
+  }
+
+  const auto tokenizer = BpeTokenizer::LoadFromDir(temp_dir);
+  EXPECT_EQ(tokenizer.Encode("abc"), std::vector<std::int64_t>({5}));
+  EXPECT_EQ(tokenizer.Decode({5}, false), "abc");
 }
 
 }  // namespace
