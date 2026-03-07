@@ -13,6 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "Build examples" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "Enable testing" FORCE)
+set(GFLAGS_BUILD_TESTING OFF CACHE BOOL "Build gflags tests" FORCE)
 set(WITH_GFLAGS OFF CACHE BOOL "Use gflags" FORCE)
 set(WITH_GTEST OFF CACHE BOOL "Use Google Test" FORCE)
 
@@ -31,6 +32,7 @@ endif()
 
 find_package(Torch REQUIRED)
 
+add_subdirectory(3rdparty/gflag EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/glog EXCLUDE_FROM_ALL)
 file(WRITE "${CMAKE_BINARY_DIR}/3rdparty/glog/CTestTestfile.cmake" "")
 set(BUILD_TESTING ON CACHE BOOL "Enable testing" FORCE)
@@ -118,6 +120,7 @@ endif()
 add_library(
     localllm_lib
     src/common/file_util.cpp
+    src/common/flags.cpp
     src/common/logging.cpp
     src/model/qwen_config.cpp
     src/model/safetensors_loader.cpp
@@ -139,7 +142,7 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/json11
 )
 
-target_link_libraries(localllm_lib PUBLIC ${TORCH_LIBRARIES} glog::glog)
+target_link_libraries(localllm_lib PUBLIC ${TORCH_LIBRARIES} gflags::gflags glog::glog)
 target_compile_definitions(localllm_lib PUBLIC NOMINMAX)
 
 if(USE_CUDA AND CUDAToolkit_FOUND)
@@ -178,6 +181,7 @@ if(LOCALLLM_BUILD_TESTS)
     add_executable(
         localllm_tests
         test/test_main.cpp
+        test/cli_options_test.cpp
         test/logging_test.cpp
         test/qwen_config_test.cpp
         test/safetensors_loader_test.cpp

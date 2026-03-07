@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@ struct CliOptions {
   SamplingParams sampling;
 };
 
-CliOptions ParseCliOptions(int argc, char** argv);
+CliOptions ParseCliOptions();
+CliOptions ParseCliOptions(std::istream& input);
 
 }  // namespace localllm

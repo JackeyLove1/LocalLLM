@@ -22,3 +22,6 @@
 [submodule "3rdparty/gflag"]
 	path = 3rdparty/gflag
 	url = https://github.com/gflags/gflags.git
+[submodule "3rdparty/folly"]
+	path = 3rdparty/folly
+	url = https://github.com/facebook/folly.git
