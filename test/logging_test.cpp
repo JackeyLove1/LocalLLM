@@ -1,5 +1,6 @@
 #include "localllm/common/logging.h"
 
+#include <glog/logging.h>
 #include <gtest/gtest.h>
 
 namespace localllm {
@@ -11,9 +12,9 @@ TEST(LoggingTest, InitializesOnceAndAcceptsRepeatedCalls) {
   InitializeLogging(nullptr);
   InitializeLogging("localllm_tests");
 
-  LogInfo("logging test info");
-  LogWarn("logging test warning");
-  LogError("logging test error");
+  LOG(INFO) << "logging test info";
+  LOG(WARNING) << "logging test warning";
+  LOG(ERROR) << "logging test error";
 
   SUCCEED();
 }

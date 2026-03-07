@@ -177,6 +177,7 @@ if(LOCALLLM_BUILD_TESTS)
 
     add_executable(
         localllm_tests
+        test/test_main.cpp
         test/logging_test.cpp
         test/qwen_config_test.cpp
         test/safetensors_loader_test.cpp
@@ -184,7 +185,7 @@ if(LOCALLLM_BUILD_TESTS)
         test/sampling_test.cpp
         test/qwen_executor_smoke_test.cpp
     )
-    target_link_libraries(localllm_tests PRIVATE localllm_lib gtest_main)
+    target_link_libraries(localllm_tests PRIVATE localllm_lib gtest)
     if(TORCH_DLLS)
         add_custom_command(
             TARGET localllm_tests POST_BUILD

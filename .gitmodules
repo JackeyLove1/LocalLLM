@@ -19,3 +19,6 @@
 [submodule "3rdparty/brpc"]
 	path = 3rdparty/brpc
 	url = https://github.com/apache/brpc.git
+[submodule "3rdparty/gflag"]
+	path = 3rdparty/gflag
+	url = https://github.com/gflags/gflags.git

@@ -53,9 +53,9 @@ ModelWeights LoadWeights(
     const std::filesystem::path& model_dir, const QwenConfig& config, const torch::Device& device) {
   const auto weights_path = model_dir / "model.safetensors";
   const auto weight_dtype = ResolveWeightDtype(device);
-  LogInfo(
-      "Loading weights from " + weights_path.string() + " on device=" + DeviceToString(device) +
-      " with dtype=" + ScalarTypeToString(weight_dtype));
+  LOG(INFO) << "Loading weights from " << weights_path.string()
+            << " on device=" << DeviceToString(device)
+            << " with dtype=" << ScalarTypeToString(weight_dtype);
   SafeTensorFile safetensors(weights_path);
 
   ModelWeights weights;
@@ -118,10 +118,9 @@ ModelWeights LoadWeights(
     weights.layers.push_back(std::move(layer));
   }
 
-  LogInfo(
-      "Finished loading weights: layers=" + std::to_string(weights.layers.size()) +
-      ", device=" + DeviceToString(weights.device) +
-      ", dtype=" + ScalarTypeToString(weights.dtype));
+  LOG(INFO) << "Finished loading weights: layers=" << weights.layers.size()
+            << ", device=" << DeviceToString(weights.device)
+            << ", dtype=" << ScalarTypeToString(weights.dtype);
   return weights;
 }
 

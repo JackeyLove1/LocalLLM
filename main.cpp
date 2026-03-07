@@ -8,14 +8,14 @@
 int main(int argc, char** argv) {
   try {
     localllm::InitializeLogging(argc > 0 ? argv[0] : "localllm");
-    localllm::LogInfo("Starting LocalLLM.");
+    LOG(INFO) << "Starting LocalLLM.";
     const auto options = localllm::ParseCliOptions(argc, argv);
     return localllm::RunApplication(options);
   } catch (const localllm::StatusError& error) {
-    localllm::LogError(std::string("StatusError: ") + error.what());
+    LOG(ERROR) << "StatusError: " << error.what();
     return 1;
   } catch (const std::exception& error) {
-    localllm::LogError(std::string("Unhandled exception: ") + error.what());
+    LOG(ERROR) << "Unhandled exception: " << error.what();
     return 1;
   }
 }

@@ -29,19 +29,4 @@ void EnsureLoggingInitialized(const char* argv0 = "localllm") {
 
 void InitializeLogging(const char* argv0) { EnsureLoggingInitialized(argv0); }
 
-void LogInfo(const std::string& message) {
-  EnsureLoggingInitialized();
-  LOG(INFO) << message;
-}
-
-void LogWarn(const std::string& message) {
-  EnsureLoggingInitialized();
-  LOG(WARNING) << message;
-}
-
-void LogError(const std::string& message) {
-  EnsureLoggingInitialized();
-  LOG(ERROR) << message;
-}
-
 }  // namespace localllm
